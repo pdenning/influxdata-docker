@@ -18,8 +18,11 @@ if ( [ ! -z "$INIT_USERS" ] || [ ! -z "$INFLUXDB_DB" ] || [ "$(ls -A /docker-ent
 
 	if [ ! -z "$INIT_USERS" ]; then
 
-		if [ -z "$INFLUXDB_ADMIN_PASSWORD" ]; then
+		if [ -z "$INFLUXDB_ADMIN_PASSWORD" ] && ( [ -z "$INFLUXDB_ADMIN_PASSWORD_FILE" ] && [ ! -f  "/run/secrets/influxdb_admin_password" ] ) ; then
 			INFLUXDB_ADMIN_PASSWORD="$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c32;echo;)"
+			echo "INFLUXDB_ADMIN_PASSWORD:$INFLUXDB_ADMIN_PASSWORD"
+		elif [ ! -z "$INFLUXDB_ADMIN_PASSWORD_FILE" ] || [ -f "/run/secrets/influxdb_admin_password" ]; then
+			INFLUXDB_ADMIN_PASSWORD="$(< "${INFLUXDB_ADMIN_PASSWORD_FILE:-/run/secrets/influxdb_admin_password}")" 
 			echo "INFLUXDB_ADMIN_PASSWORD:$INFLUXDB_ADMIN_PASSWORD"
 		fi
 
